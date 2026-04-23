@@ -29,8 +29,8 @@ import java.net.URL
 import java.text.ParseException
 import java.text.SimpleDateFormat
 
-const val bucket_id = "aw-watcher-android-test2"
-const val unlock_bucket_id = "aw-watcher-android-unlock2"
+const val bucket_id = "aw-watcher-android-plus"
+const val unlock_bucket_id = "aw-watcher-android-plus-unlock"
 
 class UsageStatsWatcher constructor(val context: Context) {
     private val ri = RustInterface(context)
