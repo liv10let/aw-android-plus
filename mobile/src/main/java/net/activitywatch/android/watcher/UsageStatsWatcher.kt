@@ -124,7 +124,7 @@ class UsageStatsWatcher constructor(val context: Context) {
             PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         }
 
-        val interval = AlarmManager.INTERVAL_HOUR   // Or if testing: AlarmManager.INTERVAL_HOUR / 60
+        val interval = 15 * 60 * 1000L   // 15 minutes
         alarmMgr?.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME,
             SystemClock.elapsedRealtime() + interval,
