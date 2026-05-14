@@ -25,7 +25,7 @@ Both apps can be installed side-by-side on the same device (different package na
 - **AFK Detection** — Monitors screen on/off, sends afk/not-afk events (bucket: `aw-watcher-android-realtime-afk`)
 - **HTTP Basic Auth** — Supports nginx reverse proxy with username/password
 - **Auto URL Prefix** — Automatically prepends `http://` if missing
-- **MIUI Overlay Filter** — Filters system overlays and false events (传送门, 个人助理, 桌面, 搜索框, 微信输入法, 系统界面组件)
+- **MIUI/System Filter** — Filters false events from system overlays and input methods (传送门, 个人助理, 桌面, 搜索框, 微信输入法, 系统界面组件)
 - **Dynamic WebUI** — Embedded WebUI shows remote dashboard
 - **Native Toolbar Menu** — Tap ☰ to open navigation drawer
 

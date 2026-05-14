@@ -40,12 +40,24 @@
 
 AccessibilityService，监听所有 app 切换：
 - `onAccessibilityEvent()` 检测 `TYPE_WINDOW_STATE_CHANGED`
-- 过滤自身 app、systemui、MIUI 浮窗（传送门、个人助理、桌面）
+- 过滤列表（6 个包名）：传送门、个人助理、桌面、微信输入法、搜索框、系统界面组件
+- AFK 状态下暂停记录（`if (AfkWatcher.isAfk) return`）
 - `logAppUsage()` 在后台线程执行网络请求（`executor.execute`）
 - 每 60 秒定时刷新当前 app 使用时长（`scheduler.scheduleAtFixedRate`）
 - 使用 `pulsetime=60` 让服务器自动合并相同事件
 
 **关键代码位置**: [ActivityWatcher.kt](mobile/src/main/java/net/activitywatch/android/watcher/ActivityWatcher.kt)
+
+### 2.2b AfkWatcher.kt — AFK 检测（新增）
+
+监听屏幕开关，发送 afk/not-afk 事件：
+- **必须动态注册**（Android 8.0+ 不允许在 Manifest 中静态声明 SCREEN_OFF/ON）
+- 由 ActivityWatcher 在 `onServiceConnected` 时调用 `afkWatcher.register()`
+- 屏幕关闭 → `{"status": "afk"}`，屏幕打开 → `{"status": "not-afk"}`
+- Bucket: `aw-watcher-android-realtime-afk`（type: `afkstatus`）
+- 使用 `PowerManager.isInteractive` 检测初始屏幕状态
+
+**关键代码位置**: [AfkWatcher.kt](mobile/src/main/java/net/activitywatch/android/watcher/AfkWatcher.kt)
 
 ### 2.3 HeartbeatWorker.kt — WorkManager 后台采集（新增）
 
@@ -111,8 +123,10 @@ productFlavors {
 | WebView 显示 401 | WebView 不携带 Basic Auth | `onReceivedHttpAuthRequest()` 处理 |
 | AsyncTask 被 MIUI 杀掉 | 后台任务不可靠 | 改用 WorkManager |
 | AccessibilityService 崩溃 | `onCreate` 中执行网络请求 | 改为 `onServiceConnected` + 后台线程 |
-| 传送门误报 | MIUI 浮窗触发 `TYPE_WINDOW_STATE_CHANGED` | 过滤 `com.miui.contentextension` 等 |
+| 传送门误报 | MIUI 浮窗触发 `TYPE_WINDOW_STATE_CHANGED` | 过滤 6 个包名（传送门、个人助理、桌面、微信输入法、搜索框、系统界面组件） |
 | 长时间同一 app 不上报 | 只在切换时记录 | 每 60 秒定时刷新 |
+| SCREEN_OFF/ON 静态注册不触发 | Android 8.0+ 限制 | 改为动态注册（ActivityWatcher.onServiceConnected） |
+| 锁屏后仍记录 app 切换 | 无 AFK 检测 | 新增 AfkWatcher，屏幕关闭时暂停记录 |
 
 ---
 
@@ -198,6 +212,7 @@ M  mobile/src/main/java/net/activitywatch/android/RustInterface.kt
 M  mobile/src/main/java/net/activitywatch/android/fragments/WebUIFragment.kt
 M  mobile/src/main/java/net/activitywatch/android/watcher/AlarmReceiver.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/ActivityWatcher.kt
+A  mobile/src/main/java/net/activitywatch/android/watcher/AfkWatcher.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/HeartbeatWorker.kt
 M  mobile/src/main/java/net/activitywatch/android/watcher/UsageStatsWatcher.kt
 M  mobile/src/main/res/layout/activity_main.xml
@@ -220,6 +235,7 @@ A  mobile/src/main/res/xml/accessibility_service_config_realtime.xml
 6. **阶段六：WorkManager** — AsyncTask 改为 WorkManager，后台更可靠。
 7. **阶段七：Basic Auth** — 支持 nginx 反代 + 用户名密码认证。
 8. **阶段八：实时版** — 新增 AccessibilityService 实时监控，100ms 延迟。
+9. **阶段九：AFK 检测** — 新增 AfkWatcher，监听屏幕开关，锁屏时暂停记录。
 
 ---
 
