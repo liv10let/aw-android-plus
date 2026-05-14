@@ -1,6 +1,8 @@
 # aw-android-plus
 
-基于 [ActivityWatch/aw-android](https://github.com/ActivityWatch/aw-android) 的 fork，增加了**远程 HTTP 转发**、**实时监控**和 **nginx Basic Auth** 支持。
+> **[English README](README.md)**
+
+基于 [ActivityWatch/aw-android](https://github.com/ActivityWatch/aw-android) 的 fork，增加了**远程 HTTP 转发**、**实时监控**、**AFK 检测**和 **nginx Basic Auth** 支持。
 
 ---
 
@@ -20,9 +22,10 @@
 - **纯远程转发** — 数据通过 HTTP 直接发送到远程 ActivityWatch 服务器，不在本地保存
 - **实时监控** — AccessibilityService 检测 app 切换，延迟约 100ms
 - **60 秒定时刷新** — 即使不切换 app，每分钟也会发送一次 heartbeat，确保长时使用也有数据
+- **AFK 检测** — 监听屏幕开关，发送 afk/not-afk 事件（bucket: `aw-watcher-android-realtime-afk`）
 - **HTTP Basic Auth** — 支持 nginx 反代 + 用户名密码认证
 - **自动补全 URL** — 输入地址时自动补全 `http://` 前缀
-- **MIUI 浮窗过滤** — 过滤传送门、个人助理等系统浮窗的误报事件
+- **MIUI 浮窗过滤** — 过滤系统浮窗和误报事件（传送门、个人助理、桌面、搜索框、微信输入法、系统界面组件）
 - **动态 WebUI** — 内嵌 WebUI 自动展示远程仪表盘
 - **原生 Toolbar 菜单** — 点击 ☰ 打开导航抽屉
 
@@ -35,6 +38,7 @@
 | `aw-watcher-android-plus` | 批量模式：应用使用数据（UsageStatsManager） |
 | `aw-watcher-android-plus-unlock` | 批量模式：屏幕解锁事件 |
 | `aw-watcher-android-realtime` | 实时模式：应用切换事件（AccessibilityService） |
+| `aw-watcher-android-realtime-afk` | 实时模式：AFK 状态（屏幕开关） |
 
 ---
 
@@ -44,6 +48,7 @@
 |------|---------|
 | `RustInterface.kt` | HTTP 客户端（移除 JNI）；Basic Auth 支持；自动补全 `http://` |
 | `ActivityWatcher.kt` | **新增**：AccessibilityService 实时监控 app 切换 |
+| `AfkWatcher.kt` | **新增**：屏幕开关 AFK 检测（BroadcastReceiver） |
 | `HeartbeatWorker.kt` | **新增**：WorkManager 后台数据同步 |
 | `UsageStatsWatcher.kt` | Bucket 改名；lastUpdated 修复；WorkManager 定时任务 |
 | `MainActivity.kt` | 远程服务器配置对话框（URL/用户名/密码） |

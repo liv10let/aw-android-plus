@@ -1,6 +1,8 @@
 # aw-android-plus
 
-A fork of [ActivityWatch/aw-android](https://github.com/ActivityWatch/aw-android) with **remote HTTP forwarding**, **real-time monitoring**, and **nginx Basic Auth** support.
+> **[中文版 README](README_zh.md)**
+
+A fork of [ActivityWatch/aw-android](https://github.com/ActivityWatch/aw-android) with **remote HTTP forwarding**, **real-time monitoring**, **AFK detection**, and **nginx Basic Auth** support.
 
 ---
 
@@ -20,9 +22,10 @@ Both apps can be installed side-by-side on the same device (different package na
 - **Pure Remote Forwarding** — Data sent via HTTP to a remote ActivityWatch server, no local storage
 - **Real-time Monitoring** — AccessibilityService detects app switches with ~100ms latency
 - **60s Periodic Refresh** — Heartbeats sent every 60s even without app switch, for long sessions
+- **AFK Detection** — Monitors screen on/off, sends afk/not-afk events (bucket: `aw-watcher-android-realtime-afk`)
 - **HTTP Basic Auth** — Supports nginx reverse proxy with username/password
 - **Auto URL Prefix** — Automatically prepends `http://` if missing
-- **MIUI Overlay Filter** — Filters system overlays (传送门, 个人助理) from false events
+- **MIUI Overlay Filter** — Filters system overlays and false events (传送门, 个人助理, 桌面, 搜索框, 微信输入法, 系统界面组件)
 - **Dynamic WebUI** — Embedded WebUI shows remote dashboard
 - **Native Toolbar Menu** — Tap ☰ to open navigation drawer
 
@@ -35,6 +38,7 @@ Both apps can be installed side-by-side on the same device (different package na
 | `aw-watcher-android-plus` | Batch: app usage (UsageStatsManager) |
 | `aw-watcher-android-plus-unlock` | Batch: screen unlock events |
 | `aw-watcher-android-realtime` | Real-time: app switches (AccessibilityService) |
+| `aw-watcher-android-realtime-afk` | Real-time: AFK status (screen on/off) |
 
 ---
 
@@ -44,6 +48,7 @@ Both apps can be installed side-by-side on the same device (different package na
 |------|---------|
 | `RustInterface.kt` | HTTP client (removed JNI); Basic Auth support; auto `http://` prefix |
 | `ActivityWatcher.kt` | **New**: AccessibilityService for real-time app monitoring |
+| `AfkWatcher.kt` | **New**: Screen on/off AFK detection via BroadcastReceiver |
 | `HeartbeatWorker.kt` | **New**: WorkManager-based background data sync |
 | `UsageStatsWatcher.kt` | Bucket renamed; lastUpdated fix; WorkManager periodic task |
 | `MainActivity.kt` | Remote server dialog with URL/username/password fields |
