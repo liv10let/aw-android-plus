@@ -95,7 +95,7 @@ class RustInterface constructor(private val context: Context? = null) {
         Log.i(TAG, "Remote-only mode: no local server to start")
     }
 
-    fun createBucketHelper(bucket_id: String, type: String, hostname: String = "unknown", client: String = "aw-android") {
+    fun createBucketHelper(bucket_id: String, type: String, hostname: String = "android", client: String = "aw-android") {
         try {
             val buckets = getBucketsJSON()
             if (bucket_id in buckets.keys().asSequence()) {
