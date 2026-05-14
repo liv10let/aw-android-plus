@@ -1,5 +1,12 @@
 # aw-android-plus — Project Rules
 
+## Coding Principles
+
+1. **Think before coding** — Don't assume. Don't hide confusion. Surface tradeoffs. State assumptions explicitly and ask if uncertain.
+2. **Simplicity first** — Minimum code that solves the problem. No features beyond what was requested. No abstractions for single-use code. No error handling for impossible scenarios.
+3. **Surgical changes** — Touch only what you must. Don't refactor working code. Match existing style. Remove only what your changes made unused.
+4. **Goal-driven execution** — Define success criteria. Loop until verified. For multi-step tasks, outline a brief plan with steps and verification checks.
+
 ## Build Commands
 
 ```bash
