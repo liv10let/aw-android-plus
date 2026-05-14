@@ -127,6 +127,8 @@ productFlavors {
 | 长时间同一 app 不上报 | 只在切换时记录 | 每 60 秒定时刷新 |
 | SCREEN_OFF/ON 静态注册不触发 | Android 8.0+ 限制 | 改为动态注册（ActivityWatcher.onServiceConnected） |
 | 锁屏后仍记录 app 切换 | 无 AFK 检测 | 新增 AfkWatcher，屏幕关闭时暂停记录 |
+| 锁屏后定时刷新仍在记录 | 定时任务未检查 AFK 状态 | 定时刷新加 `if (AfkWatcher.isAfk) return` |
+| 屏蔽列表需要改代码 | 硬编码过滤包名 | 用户可通过 Skip List UI 自行管理 |
 
 ---
 
@@ -214,6 +216,7 @@ M  mobile/src/main/java/net/activitywatch/android/watcher/AlarmReceiver.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/ActivityWatcher.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/AfkWatcher.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/HeartbeatWorker.kt
+M  mobile/src/main/res/menu/activity_main_drawer.xml
 M  mobile/src/main/java/net/activitywatch/android/watcher/UsageStatsWatcher.kt
 M  mobile/src/main/res/layout/activity_main.xml
 M  mobile/src/main/res/layout/app_bar_main.xml
@@ -236,6 +239,7 @@ A  mobile/src/main/res/xml/accessibility_service_config_realtime.xml
 7. **阶段七：Basic Auth** — 支持 nginx 反代 + 用户名密码认证。
 8. **阶段八：实时版** — 新增 AccessibilityService 实时监控，100ms 延迟。
 9. **阶段九：AFK 检测** — 新增 AfkWatcher，监听屏幕开关，锁屏时暂停记录。
+10. **阶段十：可配置屏蔽列表** — 用户可通过 app UI 管理屏蔽包名（☰ → Skip List），替代硬编码过滤。
 
 ---
 
