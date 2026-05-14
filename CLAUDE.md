@@ -48,20 +48,7 @@ adb install -r mobile/build/outputs/apk/realtime/debug/mobile-realtime-debug.apk
 - **Never ask user to run adb/curl/logcat** — always use Bash tool with PATH setup
 - **Network requests must be on background thread** — `onAccessibilityEvent` runs on main thread
 - **SCREEN_OFF/ON must be registered dynamically** — Android 8.0+ blocks static registration in Manifest
-- **Filter list in ActivityWatcher** — must always include: 传送门, 个人助理, 桌面, 微信输入法, 搜索框, 系统界面组件
-
-## Filter List (ActivityWatcher.kt)
-
-```kotlin
-val skipPackages = setOf(
-    "com.miui.contentextension",   // 传送门
-    "com.miui.personalassistant",  // 个人助理（负一屏）
-    "com.miui.home",               // 桌面
-    "com.tencent.wetype",          // 微信输入法
-    "com.android.quicksearchbox",  // 系统搜索框
-    "miui.systemui.plugin"         // MIUI 系统界面组件
-)
-```
+- **Skip list is user-configurable** — stored in SharedPreferences, managed via app UI (☰ → Skip List), never hardcode filter packages
 
 ## Bucket Names
 

@@ -40,7 +40,7 @@
 
 AccessibilityService，监听所有 app 切换：
 - `onAccessibilityEvent()` 检测 `TYPE_WINDOW_STATE_CHANGED`
-- 过滤列表（6 个包名）：传送门、个人助理、桌面、微信输入法、搜索框、系统界面组件
+- 过滤列表从 SharedPreferences 读取，用户可通过 app UI 管理（☰ → Skip List）
 - AFK 状态下暂停记录（`if (AfkWatcher.isAfk) return`）
 - `logAppUsage()` 在后台线程执行网络请求（`executor.execute`）
 - 每 60 秒定时刷新当前 app 使用时长（`scheduler.scheduleAtFixedRate`）
@@ -123,7 +123,7 @@ productFlavors {
 | WebView 显示 401 | WebView 不携带 Basic Auth | `onReceivedHttpAuthRequest()` 处理 |
 | AsyncTask 被 MIUI 杀掉 | 后台任务不可靠 | 改用 WorkManager |
 | AccessibilityService 崩溃 | `onCreate` 中执行网络请求 | 改为 `onServiceConnected` + 后台线程 |
-| 传送门误报 | MIUI 浮窗触发 `TYPE_WINDOW_STATE_CHANGED` | 过滤 6 个包名（传送门、个人助理、桌面、微信输入法、搜索框、系统界面组件） |
+| 传送门误报 | MIUI 浮窗触发 `TYPE_WINDOW_STATE_CHANGED` | 用户可配置屏蔽列表（☰ → Skip List） |
 | 长时间同一 app 不上报 | 只在切换时记录 | 每 60 秒定时刷新 |
 | SCREEN_OFF/ON 静态注册不触发 | Android 8.0+ 限制 | 改为动态注册（ActivityWatcher.onServiceConnected） |
 | 锁屏后仍记录 app 切换 | 无 AFK 检测 | 新增 AfkWatcher，屏幕关闭时暂停记录 |
