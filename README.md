@@ -1,20 +1,40 @@
-# aw-android (Remote Fork)
+# aw-android-plus
 
-A fork of [ActivityWatch/aw-android](https://github.com/ActivityWatch/aw-android) with **remote ActivityWatch server forwarding** support.
+A fork of [ActivityWatch/aw-android](https://github.com/ActivityWatch/aw-android) with **remote HTTP forwarding**, **real-time monitoring**, and **nginx Basic Auth** support.
 
 ---
 
 ## Features
 
-This fork changes the data collection from "local storage" to "remote HTTP forwarding". Captured app usage, browser visits, screen-unlock events, etc. are sent directly to a user-configured remote ActivityWatch server via HTTP API.
+### Two Monitoring Modes
 
-### Key Features
+| Mode | App Name | Latency | Method | Battery |
+|------|----------|---------|--------|---------|
+| **Batch** | ActivityWatch | 1~2 hours | UsageStatsManager + WorkManager (every 15min) | Low |
+| **Real-time** | ActivityWatch 实时版 | ~100ms | AccessibilityService | Medium |
 
-- **Pure Remote Forwarding** — Data is sent directly to the remote server via HTTP, no local storage
-- **Configurable Remote Address** — In-app UI to set the remote server address
-- **Dynamic WebUI** — The embedded WebUI automatically shows the remote dashboard after configuration
-- **Native Menu** — Toolbar restored; tap the top ☰ button to open the navigation drawer
-- **Cleartext HTTP Support** — Allows sending data to HTTP servers (for LAN/internal deployments)
+Both apps can be installed side-by-side on the same device (different package names).
+
+### Core Features
+
+- **Pure Remote Forwarding** — Data sent via HTTP to a remote ActivityWatch server, no local storage
+- **Real-time Monitoring** — AccessibilityService detects app switches with ~100ms latency
+- **60s Periodic Refresh** — Heartbeats sent every 60s even without app switch, for long sessions
+- **HTTP Basic Auth** — Supports nginx reverse proxy with username/password
+- **Auto URL Prefix** — Automatically prepends `http://` if missing
+- **MIUI Overlay Filter** — Filters system overlays (传送门, 个人助理) from false events
+- **Dynamic WebUI** — Embedded WebUI shows remote dashboard
+- **Native Toolbar Menu** — Tap ☰ to open navigation drawer
+
+---
+
+## Bucket Names
+
+| Bucket | Data Source |
+|--------|-----------|
+| `aw-watcher-android-plus` | Batch: app usage (UsageStatsManager) |
+| `aw-watcher-android-plus-unlock` | Batch: screen unlock events |
+| `aw-watcher-android-realtime` | Real-time: app switches (AccessibilityService) |
 
 ---
 
@@ -22,98 +42,97 @@ This fork changes the data collection from "local storage" to "remote HTTP forwa
 
 | File | Changes |
 |------|---------|
-| `RustInterface.kt` | Changed from JNI client to HTTP client; removed local aw-server calls; all operations access remote server via HTTP API |
-| `UsageStatsWatcher.kt` | Bucket names changed to `aw-watcher-android-test2` and `aw-watcher-android-unlock2` |
-| `MainActivity.kt` | Removed `ri.startServerTask()` (no local server); `baseURL` reads remote address from config; added `showRemoteServerDialog()`; enabled Toolbar + ActionBarDrawerToggle |
-| `AWPreferences.kt` | Added `getRemoteServerUrl()` / `setRemoteServerUrl()` for persisting remote address |
-| `activity_main_drawer.xml` | Added `nav_remote_server` menu item |
-| `app_bar_main.xml` | Enabled Toolbar |
-| `activity_main.xml` | Added `android:id` to `app_bar_main` include |
-| `network_security_config.xml` | Added `<base-config cleartextTrafficPermitted="true"/>` to allow plaintext HTTP |
+| `RustInterface.kt` | HTTP client (removed JNI); Basic Auth support; auto `http://` prefix |
+| `ActivityWatcher.kt` | **New**: AccessibilityService for real-time app monitoring |
+| `HeartbeatWorker.kt` | **New**: WorkManager-based background data sync |
+| `UsageStatsWatcher.kt` | Bucket renamed; lastUpdated fix; WorkManager periodic task |
+| `MainActivity.kt` | Remote server dialog with URL/username/password fields |
+| `AWPreferences.kt` | Store URL, username, password in SharedPreferences |
+| `WebUIFragment.kt` | Handle HTTP Basic Auth challenges in WebView |
+| `build.gradle` | Added WorkManager dependency; `realtime` flavor |
+| `AndroidManifest.xml` | Registered ActivityWatcher service |
+| `accessibility_service_config_realtime.xml` | **New**: AccessibilityService config |
+| `network_security_config.xml` | Cleartext HTTP allowed |
 
 ---
 
-## Configuration Guide
+## Build
 
-### 1. Prepare Remote Server
-
-You need a running ActivityWatch server, such as:
-- `aw-server-rust` (recommended)
-- `aw-server` (Python version)
-
-The server must expose the HTTP API, default port is `5600`.
-
-### 2. Install APK
-
-```bash
-./gradlew assembleDebug
-adb install -r mobile/build/outputs/apk/debug/mobile-debug.apk
-```
-
-### 3. Configure Remote Address
-
-1. Open the app and grant **Usage Access** permission
-2. Tap the top **☰** button to open the navigation drawer (top-left of the white Toolbar)
-3. Tap **Remote Server**
-4. Enter the remote server address, e.g. `http://192.168.1.100:5600`
-5. Tap **Save**
-
-> **Note**: Leaving it blank falls back to the local server `http://127.0.0.1:5600`
-
-### 4. Verify Data
-
-After using your phone normally for 1-2 hours, visit in a browser:
-```
-http://your-server-ip:5600/#/timeline
-```
-
-You should see the phone's collected data.
-
----
-
-## Debugging
-
-Check remote forwarding logs:
-```bash
-adb logcat -s RustInterface:D
-```
-
-You should see:
-```
-HTTP POST OK: /api/0/buckets/aw-watcher-android-test2/heartbeat?pulsetime=1.0
-```
-
----
-
-## Build Environment
-
-This project was set up from scratch on Windows 11 without Android Studio.
+### Environment (Windows 11, no Android Studio)
 
 | Component | Path |
 |-----------|------|
 | JDK 17 | `./jdk-17.0.18+8` |
 | Android SDK | `./android-sdk` |
-| Output APK | `mobile/build/outputs/apk/debug/mobile-debug.apk` |
 
-Build commands:
+### Build Commands
+
 ```bash
 export JAVA_HOME="$(pwd)/jdk-17.0.18+8"
 export ANDROID_HOME="$(pwd)/android-sdk"
 export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
+# Batch version
 ./gradlew assembleDebug
+adb install -r mobile/build/outputs/apk/debug/mobile-debug.apk
+
+# Real-time version
+./gradlew assembleRealtimeDebug
+adb install -r mobile/build/outputs/apk/realtime/debug/mobile-realtime-debug.apk
 ```
 
-> **Note**: This project depends on pre-built Rust JNI libraries (`libaw_server.so`), which are included in `jniLibs/`. You do not need to compile Rust/NDK yourself.
+---
+
+## Configuration
+
+### 1. Prepare Remote Server
+
+You need a running ActivityWatch server (`aw-server-rust` or `aw-server`).
+
+For nginx reverse proxy with Basic Auth:
+```nginx
+server {
+    listen 5601;
+    auth_basic "ActivityWatch";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+    proxy_pass http://127.0.0.1:5600;
+}
+```
+
+### 2. Configure in App
+
+1. Open the app, tap **☰** → **Remote Server**
+2. Enter URL (e.g. `http://your-server:5601`), username, password
+3. Tap **Save**
+
+### 3. Enable Accessibility (Real-time version only)
+
+Settings → Accessibility → Find **ActivityWatch Realtime** → Enable
+
+---
+
+## Debugging
+
+```bash
+# Batch version logs
+adb logcat -s RustInterface:D UsageStatsWatcher:D
+
+# Real-time version logs
+adb logcat -s ActivityWatcher:D RustInterface:D
+
+# Verify remote forwarding
+curl -u username:password http://your-server:5601/api/0/buckets
+```
 
 ---
 
 ## Known Limitations
 
-- App usage data from UsageStats is batched hourly (AlarmManager), not real-time
-- Chrome browser data is captured in real-time via AccessibilityService; forwarding delay is ~hundreds of milliseconds
-- The remote server must expose the standard ActivityWatch API (`aw-server-rust` or `aw-server`)
-- Data will be lost when network is disconnected (fire-and-forget, no local cache)
+- Batch mode: app usage data delayed 1~2 hours (Android system limitation)
+- Real-time mode: requires AccessibilityService permission (manual enable)
+- Real-time mode: higher battery usage than batch mode
+- Network disconnection causes data loss (fire-and-forget, no local cache)
+- MIUI may kill AccessibilityService; set battery policy to "Unrestricted"
 
 ---
 
