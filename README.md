@@ -1,4 +1,4 @@
-# aw-android-plus
+# aw-android-realtime
 
 > **[中文版 README](README_zh.md)**
 

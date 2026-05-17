@@ -1,4 +1,4 @@
-# aw-android-plus — Project Rules
+# aw-android-realtime — Project Rules
 
 ## Coding Principles
 
