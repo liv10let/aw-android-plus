@@ -219,13 +219,13 @@ jobs:
         JKS_STOREPASS: ${{ secrets.KEY_ANDROID_JKS_STOREPASS }}
         JKS_KEYPASS: ${{ secrets.KEY_ANDROID_JKS_KEYPASS }}
       run: |
-        make dist/aw-android-realtime.${{ matrix.type }}
+        make dist/aw-android.${{ matrix.type }}
 
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
-        name: aw-android-realtime
-        path: dist/aw-android-realtime*.${{ matrix.type }}
+        name: aw-android
+        path: dist/aw-android*.${{ matrix.type }}
 
   test:
     name: Test
@@ -502,7 +502,7 @@ jobs:
     - name: Download APK & AAB
       uses: actions/download-artifact@v3
       with:
-        name: aw-android-realtime
+        name: aw-android
         path: dist
 
     - name: Display structure of downloaded files
@@ -558,7 +558,7 @@ jobs:
     - name: Download release APK & AAB
       uses: actions/download-artifact@v3
       with:
-        name: aw-android-realtime
+        name: aw-android
         path: dist
 
     - name: Display structure of downloaded files

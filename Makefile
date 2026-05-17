@@ -25,31 +25,31 @@ build: all
 metadata: fastlane/metadata/android/en-US/images/icon.png
 
 # builds an app bundle, puts it in dist
-build-bundle: dist/aw-android-realtime.aab
+build-bundle: dist/aw-android.aab
 
 # builds a complete, signed apk, puts it in dist
-build-apk: dist/aw-android-realtime.apk
+build-apk: dist/aw-android.apk
 
 # Attempts at working with bundletool to build device-specific APKs
 # See: https://github.com/ActivityWatch/aw-android/issues/61
-dist/aw-android-realtime.apks:
-	rm -rf dist/aw-android-realtime.apks
+dist/aw-android.apks:
+	rm -rf dist/aw-android.apks
 	$(BUNDLETOOL) \
-		build-apks --bundle=dist/aw-android-realtime.aab --output=dist/aw-android-realtime.apks
+		build-apks --bundle=dist/aw-android.aab --output=dist/aw-android.apks
 
 # Extracts device-specific APKs from the apks bundle
 build-device-specific-apks:
 	# TODO: add arm(7), x86, x86_64
 	$(BUNDLETOOL) \
 		extract-apks \
-		--apks=dist/aw-android-realtime.apks \
+		--apks=dist/aw-android.apks \
 		--output-dir=dist/splits/arm64 \
 		--device-spec=scripts/device-arm64.json
 
 # Useful for inspecting the contents of the apks
-unzip-apks: dist/aw-android-realtime.apks
+unzip-apks: dist/aw-android.apks
 	rm -rf dist/apks
-	unzip -o dist/aw-android-realtime.apks -d dist/apks
+	unzip -o dist/aw-android.apks -d dist/apks
 
 # builds debug and test apks (unsigned)
 build-apk-debug: $(APKDIR)/debug/mobile-debug.apk $(APKDIR)/androidTest/debug/mobile-debug-androidTest.apk
@@ -101,7 +101,7 @@ $(AABDIR)/$(RELEASE_TYPE)/mobile-$(RELEASE_TYPE).aab:
 	tree $(AABDIR)
 
 # Signed release bundle
-dist/aw-android-realtime.aab: $(AABDIR)/$(RELEASE_TYPE)/mobile-$(RELEASE_TYPE).aab
+dist/aw-android.aab: $(AABDIR)/$(RELEASE_TYPE)/mobile-$(RELEASE_TYPE).aab
 	mkdir -p dist
 	@# Only sign if we have key secrets set ($JKS_KEYPASS and $JKS_STOREPASS)
 ifneq ($(HAS_SECRETS), true)
@@ -112,7 +112,7 @@ else
 endif
 
 # Signed release APK
-dist/aw-android-realtime.apk: $(APKDIR)/$(RELEASE_TYPE)/mobile-$(RELEASE_TYPE_UNSIGNED).apk
+dist/aw-android.apk: $(APKDIR)/$(RELEASE_TYPE)/mobile-$(RELEASE_TYPE_UNSIGNED).apk
 	mkdir -p dist
 	@# Only sign if we have key secrets set ($JKS_KEYPASS and $JKS_STOREPASS)
 ifneq ($(HAS_SECRETS), true)

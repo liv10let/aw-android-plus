@@ -1,7 +1,7 @@
-# aw-android-realtime / 交接手册 (Handover Manual)
+# aw-android-plus / 交接手册 (Handover Manual)
 
 > 本文档供后续模型快速理解项目上下文。
-> **最后更新**: 2026-05-17
+> **最后更新**: 2026-05-14
 > **当前状态**: 纯远程转发 + 批量/实时双模式 + nginx Basic Auth
 
 ---
@@ -9,9 +9,9 @@
 ## 1. 项目概况
 
 - **原项目**: https://github.com/ActivityWatch/aw-android
-- **用户仓库**: https://github.com/liv10let/aw-android-realtime
+- **用户仓库**: https://github.com/liv10let/aw-android-plus
 - **核心目标**: 将 aw-android 改为纯远程 HTTP 转发，支持批量和实时两种监控模式
-- **工作目录**: `e:\Project_workspace\aw-android-realtime`
+- **工作目录**: `e:\Project_workspace\aw-android`
 
 ### 1.1 两种监控模式
 
