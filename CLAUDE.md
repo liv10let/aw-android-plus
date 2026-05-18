@@ -49,6 +49,7 @@ adb install -r mobile/build/outputs/apk/realtime/debug/mobile-realtime-debug.apk
 - **Network requests must be on background thread** — `onAccessibilityEvent` runs on main thread
 - **SCREEN_OFF/ON must be registered dynamically** — Android 8.0+ blocks static registration in Manifest
 - **Skip list is user-configurable** — stored in SharedPreferences, managed via app UI (☰ → Skip List), never hardcode filter packages
+- **Screen-off must flush immediately** — AfkWatcher callback clears lastApp on SCREEN_OFF; never rely on periodic refresh to stop
 
 ## Bucket Names
 

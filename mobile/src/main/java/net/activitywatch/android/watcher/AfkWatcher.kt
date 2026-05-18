@@ -25,6 +25,7 @@ class AfkWatcher(private val context: Context) {
 
     private val executor = Executors.newSingleThreadExecutor()
     private var registered = false
+    private var onScreenOff: (() -> Unit)? = null
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context, intent: Intent) {
@@ -32,6 +33,7 @@ class AfkWatcher(private val context: Context) {
                 Intent.ACTION_SCREEN_OFF -> {
                     Log.i(TAG, "Screen OFF → AFK")
                     isAfk = true
+                    onScreenOff?.invoke()
                     executor.execute { sendAfkEvent(true) }
                 }
                 Intent.ACTION_SCREEN_ON -> {
@@ -41,6 +43,10 @@ class AfkWatcher(private val context: Context) {
                 }
             }
         }
+    }
+
+    fun setOnScreenOffListener(listener: () -> Unit) {
+        onScreenOff = listener
     }
 
     fun register() {
@@ -53,7 +59,6 @@ class AfkWatcher(private val context: Context) {
             registered = true
             Log.i(TAG, "AfkWatcher registered")
 
-            // Check initial screen state
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             isAfk = !pm.isInteractive
             Log.i(TAG, "Initial screen state: ${if (isAfk) "AFK" else "NOT AFK"}")

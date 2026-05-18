@@ -30,11 +30,30 @@ class ActivityWatcher : AccessibilityService() {
         try {
             ri = RustInterface(applicationContext)
             afkWatcher = AfkWatcher(applicationContext)
+            afkWatcher?.setOnScreenOffListener { flushCurrentApp() }
             afkWatcher?.register()
             startPeriodicRefresh()
             Log.i(TAG, "ActivityWatcher service connected")
         } catch (e: Exception) {
             Log.e(TAG, "ActivityWatcher init error: ${e.message}")
+        }
+    }
+
+    private fun flushCurrentApp() {
+        if (lastApp != null && lastAppTimestamp != null) {
+            val now = Instant.now()
+            val duration = org.threeten.bp.Duration.between(lastAppTimestamp, now)
+            if (duration.seconds > 0) {
+                val appPackage = lastApp!!
+                val start = lastAppTimestamp!!
+                val dur = duration.seconds.toDouble()
+                executor.execute {
+                    logAppUsage(appPackage, start, dur)
+                }
+                Log.i(TAG, "Flushed $appPackage on screen off (${duration.seconds}s)")
+            }
+            lastApp = null
+            lastAppTimestamp = null
         }
     }
 

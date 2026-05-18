@@ -56,6 +56,7 @@ AccessibilityService，监听所有 app 切换：
 - 屏幕关闭 → `{"status": "afk"}`，屏幕打开 → `{"status": "not-afk"}`
 - Bucket: `aw-watcher-android-realtime-afk`（type: `afkstatus`）
 - 使用 `PowerManager.isInteractive` 检测初始屏幕状态
+- **屏幕关闭时通过回调通知 ActivityWatcher flush 当前 app 时长并清除 lastApp**
 
 **关键代码位置**: [AfkWatcher.kt](mobile/src/main/java/net/activitywatch/android/watcher/AfkWatcher.kt)
 
@@ -127,7 +128,8 @@ productFlavors {
 | 长时间同一 app 不上报 | 只在切换时记录 | 每 60 秒定时刷新 |
 | SCREEN_OFF/ON 静态注册不触发 | Android 8.0+ 限制 | 改为动态注册（ActivityWatcher.onServiceConnected） |
 | 锁屏后仍记录 app 切换 | 无 AFK 检测 | 新增 AfkWatcher，屏幕关闭时暂停记录 |
-| 锁屏后定时刷新仍在记录 | 定时任务未检查 AFK 状态 | 定时刷新加 `if (AfkWatcher.isAfk) return` |
+| 锁屏后定时刷新仍在记录 | 定时任务未检查 AFK 状态 | 使用 `PowerManager.isInteractive` 实时检查屏幕状态 |
+| 锁屏后 lastApp 未清除 | AfkWatcher 未通知 ActivityWatcher | 屏幕关闭时 flush 当前 app 并清除 lastApp（回调机制） |
 | 屏蔽列表需要改代码 | 硬编码过滤包名 | 用户可通过 Skip List UI 自行管理 |
 
 ---
