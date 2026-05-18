@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.os.PowerManager
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import net.activitywatch.android.AWPreferences
 import net.activitywatch.android.RustInterface
 import org.json.JSONObject
 import org.threeten.bp.Instant
@@ -25,15 +26,19 @@ class ActivityWatcher : AccessibilityService() {
     private var refreshTask: ScheduledFuture<*>? = null
     private var afkWatcher: AfkWatcher? = null
 
+    // Cached skip list (loaded once, refreshed on service connect)
+    private var skipPackages: Set<String> = emptySet()
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         try {
             ri = RustInterface(applicationContext)
+            skipPackages = AWPreferences(applicationContext).getSkipPackages()
             afkWatcher = AfkWatcher(applicationContext)
             afkWatcher?.setOnScreenOffListener { flushCurrentApp() }
             afkWatcher?.register()
             startPeriodicRefresh()
-            Log.i(TAG, "ActivityWatcher service connected")
+            Log.i(TAG, "ActivityWatcher service connected, skip list: ${skipPackages.size} packages")
         } catch (e: Exception) {
             Log.e(TAG, "ActivityWatcher init error: ${e.message}")
         }
@@ -70,21 +75,20 @@ class ActivityWatcher : AccessibilityService() {
                 if (lastApp != null && lastAppTimestamp != null) {
                     val now = Instant.now()
                     val duration = org.threeten.bp.Duration.between(lastAppTimestamp, now)
-                    if (duration.seconds >= 60) {
+                    if (duration.seconds >= 300) {  // 5 minutes
                         val appPackage = lastApp!!
                         val start = lastAppTimestamp!!
                         val dur = duration.seconds.toDouble()
                         executor.execute {
                             logAppUsage(appPackage, start, dur)
                         }
-                        // Reset timestamp to now so next refresh accumulates from here
                         lastAppTimestamp = now
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Periodic refresh error: ${e.message}")
             }
-        }, 60, 60, TimeUnit.SECONDS)
+        }, 300, 300, TimeUnit.SECONDS)  // 5 minutes
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -96,13 +100,7 @@ class ActivityWatcher : AccessibilityService() {
 
         if (packageName.startsWith("net.activitywatch.android")) return
         if (packageName == "com.android.systemui") return
-
-        // Skip packages from user-configured skip list
-        val prefs = net.activitywatch.android.AWPreferences(applicationContext)
-        val skipPackages = prefs.getSkipPackages()
         if (packageName in skipPackages) return
-
-        // Skip if screen is off (AFK)
         if (!isScreenOn()) return
 
         if (packageName != lastApp) {
@@ -139,7 +137,7 @@ class ActivityWatcher : AccessibilityService() {
             data.put("app", getAppName(appPackage))
             data.put("package", appPackage)
 
-            ri?.heartbeatHelper(bucket_id, start, duration, data, 60.0)
+            ri?.heartbeatHelper(bucket_id, start, duration, data, 300.0)
             Log.d(TAG, "Logged: ${getAppName(appPackage)} for ${duration}s")
         } catch (e: Exception) {
             Log.e(TAG, "logAppUsage error: ${e.message}")

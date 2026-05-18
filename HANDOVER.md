@@ -43,8 +43,10 @@ AccessibilityService，监听所有 app 切换：
 - 过滤列表从 SharedPreferences 读取，用户可通过 app UI 管理（☰ → Skip List）
 - AFK 状态下暂停记录（`if (AfkWatcher.isAfk) return`）
 - `logAppUsage()` 在后台线程执行网络请求（`executor.execute`）
-- 每 60 秒定时刷新当前 app 使用时长（`scheduler.scheduleAtFixedRate`）
-- 使用 `pulsetime=60` 让服务器自动合并相同事件
+- 每 5 分钟定时刷新当前 app 使用时长（`scheduler.scheduleAtFixedRate`）
+- 屏幕关闭时跳过定时刷新（省电）
+- skip list 缓存到内存（避免每次读 SharedPreferences）
+- 使用 `pulsetime=300` 让服务器自动合并相同事件
 
 **关键代码位置**: [ActivityWatcher.kt](mobile/src/main/java/net/activitywatch/android/watcher/ActivityWatcher.kt)
 
