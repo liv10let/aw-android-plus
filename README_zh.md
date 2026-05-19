@@ -14,6 +14,7 @@
 |------|----------|------|---------|---------|
 | **批量模式** | ActivityWatch | 1~2 小时 | UsageStatsManager + WorkManager（每15分钟） | 低 |
 | **实时模式** | ActivityWatch 实时版 | ~100ms | AccessibilityService | 中等 |
+| **省电模式** | ActivityWatch 省电版 | 15 分钟 | WorkManager + UsageStatsManager | 最低 |
 
 两个 App 可以同时安装在同一台手机上（包名不同）。
 

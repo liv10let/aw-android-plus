@@ -15,10 +15,11 @@
 
 ### 1.1 两种监控模式
 
-| 模式 | App 名称 | 包名 | Bucket | 延迟 | 触发方式 |
-|------|----------|------|--------|------|---------|
-| 批量 | ActivityWatch | `.debug` / `.realtime.debug` | `aw-watcher-android-plus` | 1~2h | WorkManager 每15分钟 |
-| 实时 | ActivityWatch 实时版 | `.realtime.debug` | `aw-watcher-android-realtime` | ~100ms | AccessibilityService |
+| 模式 | App 名称 | 包名 | Bucket | 延迟 | 触发方式 | 耗电 |
+|------|----------|------|--------|------|---------|------|
+| 批量 | ActivityWatch | `.debug` | `aw-watcher-android-plus` | 1~2h | WorkManager 每15分钟 | 低 |
+| 实时 | ActivityWatch 实时版 | `.realtime.debug` | `aw-watcher-android-realtime` | ~100ms | AccessibilityService | 高 |
+| 省电 | ActivityWatch 省电版 | `.powersave.debug` | `aw-watcher-android-powersave` | 15分钟 | WorkManager 每15分钟 | 最低 |
 
 实时版基于 AccessibilityService 监听 `TYPE_WINDOW_STATE_CHANGED` 事件，每次 app 切换立即记录，并每 60 秒定时刷新当前 app 的使用时长。
 
@@ -62,7 +63,17 @@ AccessibilityService，监听所有 app 切换：
 
 **关键代码位置**: [AfkWatcher.kt](mobile/src/main/java/net/activitywatch/android/watcher/AfkWatcher.kt)
 
-### 2.3 HeartbeatWorker.kt — WorkManager 后台采集（新增）
+### 2.3 PowerSaveWatcher.kt — 省电版采集（新增）
+
+WorkManager + UsageStatsManager，每 15 分钟采集一次：
+- 不需要 AccessibilityService，不需要无障碍权限
+- 查询 UsageStatsManager 获取历史事件
+- 跳过 skip list 中的包名
+- 系统智能调度，最省电
+
+**关键代码位置**: [PowerSaveWatcher.kt](mobile/src/main/java/net/activitywatch/android/watcher/PowerSaveWatcher.kt)
+
+### 2.4 HeartbeatWorker.kt — WorkManager 后台采集（新增）
 
 替代原来的 AsyncTask：
 - `PeriodicWorkRequest` 每 15 分钟执行一次
@@ -220,6 +231,7 @@ M  mobile/src/main/java/net/activitywatch/android/watcher/AlarmReceiver.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/ActivityWatcher.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/AfkWatcher.kt
 A  mobile/src/main/java/net/activitywatch/android/watcher/HeartbeatWorker.kt
+A  mobile/src/main/java/net/activitywatch/android/watcher/PowerSaveWatcher.kt
 M  mobile/src/main/res/menu/activity_main_drawer.xml
 M  mobile/src/main/java/net/activitywatch/android/watcher/UsageStatsWatcher.kt
 M  mobile/src/main/res/layout/activity_main.xml
@@ -244,6 +256,7 @@ A  mobile/src/main/res/xml/accessibility_service_config_realtime.xml
 8. **阶段八：实时版** — 新增 AccessibilityService 实时监控，100ms 延迟。
 9. **阶段九：AFK 检测** — 新增 AfkWatcher，监听屏幕开关，锁屏时暂停记录。
 10. **阶段十：可配置屏蔽列表** — 用户可通过 app UI 管理屏蔽包名（☰ → Skip List），替代硬编码过滤。
+11. **阶段十一：省电版** — 新增 PowerSaveWatcher（WorkManager + UsageStatsManager），每 15 分钟采集一次，最省电。
 
 ---
 

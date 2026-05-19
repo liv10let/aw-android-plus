@@ -57,9 +57,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val view = binding.root
         setContentView(view)
 
-        // Set up alarm to send heartbeats
+        // Set up periodic work (batch mode uses UsageStatsWatcher, powersave uses PowerSaveWatcher)
         val usw = UsageStatsWatcher(this)
         usw.setupAlarm()
+
+        // Also set up PowerSaveWatcher periodic work (for powersave flavor)
+        try {
+            net.activitywatch.android.watcher.PowerSaveWatcher.setupPeriodicWork(this)
+        } catch (e: Exception) {
+            Log.w(TAG, "PowerSaveWatcher setup skipped: ${e.message}")
+        }
 
         binding.navView.setNavigationItemSelectedListener(this)
 
@@ -82,10 +89,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onResume() {
         super.onResume()
 
-        // Ensures data is always fresh when app is opened,
-        // even if it was up to an hour since the last logging-alarm was triggered.
+        // Ensures data is always fresh when app is opened
         val usw = UsageStatsWatcher(this)
         usw.sendHeartbeats()
+
+        // Also trigger PowerSaveWatcher on resume
+        try {
+            net.activitywatch.android.watcher.PowerSaveWatcher.triggerOnce(this)
+        } catch (e: Exception) {
+            Log.w(TAG, "PowerSaveWatcher trigger skipped: ${e.message}")
+        }
     }
 
     private fun showSkipListDialog() {

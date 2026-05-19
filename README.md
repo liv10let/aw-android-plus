@@ -14,6 +14,7 @@ A fork of [ActivityWatch/aw-android](https://github.com/ActivityWatch/aw-android
 |------|----------|---------|--------|---------|
 | **Batch** | ActivityWatch | 1~2 hours | UsageStatsManager + WorkManager (every 15min) | Low |
 | **Real-time** | ActivityWatch 实时版 | ~100ms | AccessibilityService | Medium |
+| **Power-save** | ActivityWatch 省电版 | 15 minutes | WorkManager + UsageStatsManager | Lowest |
 
 Both apps can be installed side-by-side on the same device (different package names).
 

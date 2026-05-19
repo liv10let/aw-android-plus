@@ -49,6 +49,11 @@ android {
             applicationIdSuffix ".realtime"
             resValue "string", "app_name", "ActivityWatch 实时版"
         }
+        powersave {
+            dimension "mode"
+            applicationIdSuffix ".powersave"
+            resValue "string", "app_name", "ActivityWatch 省电版"
+        }
     }
     compileOptions {
         sourceCompatibility = '1.8'

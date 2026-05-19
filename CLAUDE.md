@@ -21,6 +21,10 @@ adb install -r mobile/build/outputs/apk/debug/mobile-debug.apk
 # Real-time version
 ./gradlew assembleRealtimeDebug
 adb install -r mobile/build/outputs/apk/realtime/debug/mobile-realtime-debug.apk
+
+# Power-save version
+./gradlew assemblePowersaveDebug
+adb install -r mobile/build/outputs/apk/powersave/debug/mobile-powersave-debug.apk
 ```
 
 ## Architecture
@@ -59,6 +63,8 @@ adb install -r mobile/build/outputs/apk/realtime/debug/mobile-realtime-debug.apk
 | `aw-watcher-android-plus-unlock` | Batch | os.lockscreen.unlocks |
 | `aw-watcher-android-realtime` | Real-time | currentwindow |
 | `aw-watcher-android-realtime-afk` | Real-time | afkstatus |
+| `aw-watcher-android-powersave` | Power-save | currentwindow |
+| `aw-watcher-android-powersave-unlock` | Power-save | os.lockscreen.unlocks |
 
 ## Server
 
